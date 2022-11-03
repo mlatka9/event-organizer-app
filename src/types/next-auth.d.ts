@@ -1,4 +1,5 @@
 import { DefaultSession } from "next-auth";
+import { boolean } from "zod";
 
 declare module "next-auth" {
   /**
@@ -11,18 +12,16 @@ declare module "next-auth" {
   }
 }
 
-declare module 'next-auth/jwt/types' {
+declare module "next-auth/jwt/types" {
   interface JWT {
     uid: string;
   }
 }
 
-declare module 'next' {
-  export interface NextApiRequest extends IncomingMessage{
+declare module "next" {
+  export interface NextApiRequest extends IncomingMessage {
     user?: {
       id: string;
     } & DefaultSession["user"];
   }
 }
-
-

@@ -1,7 +1,9 @@
-import { createGroup } from "@server/controllers/groups";
+import groupController from "@server/controllers/groups";
 import { withUser } from "@server/middleware/with-user";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createRouter, } from "next-connect";
+import { validateRequestBody } from "@server/lib/validate-request-body";
+import { CreateGroupInput, createGroupSchema } from "@server/controllers/groups/types";
 
 // Default Req and Res are IncomingMessage and ServerResponse
 // You may want to pass in NextApiRequest and NextApiResponse
@@ -14,16 +16,14 @@ router
     const end = Date.now();
     console.log(`Request took ${end - start}ms`);
   })
-  .get((req, res) => {
-    res.send("Hello world")
-    res.end()
+  .get(async (req, res) => {
+    const groups = await groupController.getAllGroups(req, res);
+    res.json(groups)
   })
   .use(withUser)
   .post(async (req, res) => {
-    createGroup(req, res)
-    // use async/await
-    // const user = await insertUser(req.body.user);
-    res.json({ postTest: "asd" });
+    await groupController.createGroup(req, res)
+    res.json(201)
   })
 
 // create a handler from router with custom

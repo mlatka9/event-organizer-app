@@ -5,6 +5,7 @@ import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "../../../server/db/client";
 import { env } from "../../../env/server.mjs";
+import bcrypt from "bcryptjs";
 
 export const authOptions: NextAuthOptions = {
   // Include user.id on session
@@ -13,7 +14,7 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async jwt({ token, user }) {
-      console.log("rzeczy", token, user)
+      // console.log("rzeczy", token, user)
       if (user) {
         token.uid = user.id;
       }
@@ -32,20 +33,46 @@ export const authOptions: NextAuthOptions = {
     CredentialProvider({
       name: "Credentials",
       credentials: {
-        username: { label: "Username", type: "text", placeholder: "jsmith" },
+        email: {
+          label: "Email",
+          type: "text",
+          placeholder: "jsmith@gmail.com",
+        },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-   
-        const user = {
-          id: "111",
-          name: "J Smith",
-          email: "jsmith@example.com",
-          jakies3pole: "asd",
-        };
-        if (user) {
+        console.log(credentials);
+        const user = await prisma.user.findUnique({
+          where: {
+            email: credentials?.email,
+          },
+        });
+
+        console.log("user", user);
+
+        if (!credentials?.email || !credentials.password || !user?.password)
+          return null;
+
+        const isPasswordCorrect = await bcrypt.compare(
+          credentials.password,
+          user.password
+        );
+        // const user = {
+        //   id: "111",
+        //   name: "J Smith",
+        //   email: "jsmith@example.com",
+        //   image: null,
+        //   jakies3pole: "asd",
+        // };
+        if (isPasswordCorrect) {
+          const userObject = {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            image: user.image,
+          };
           // Any object returned will be saved in `user` property of the JWT
-          return user;
+          return userObject;
         } else {
           // If you return null then an error will be displayed advising the user to check their details.
           return null;

@@ -1,9 +1,9 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// generator client {
-//   provider = "prisma-client-js"
-// }
+generator client {
+  provider = "prisma-client-js"
+}
 
 // generator erd {
 //   provider                  = "prisma-erd-generator"
@@ -12,9 +12,9 @@
 //   // ERD_DEBUG                 = true
 // }
 
-generator dbml {
-  provider = "prisma-dbml-generator"
-}
+// generator dbml {
+//   provider = "prisma-dbml-generator"
+// }
 
 datasource db {
   provider = "postgresql"
@@ -63,6 +63,7 @@ model User {
   name              String?
   email             String?            @unique
   emailVerified     DateTime?
+  password          String?
   image             String?
   accounts          Account[]
   // sessions      Session[]
@@ -94,10 +95,15 @@ model Group {
   name        String
   description String
 
-  eventTags     EventTag[]
-  groupMessages GroupMessage[]
-  userGroups    GroupMember[]
-  events        Event[]
+  groupMessages   GroupMessage[]
+  groupMember     GroupMember[]
+  events          Event[]
+  groupVisibility GroupVisibility
+}
+
+enum GroupVisibility {
+  PUBLIC
+  PRIVATE
 }
 
 model EventParticipant {
@@ -131,11 +137,9 @@ model GroupMember {
 // }
 
 model EventTag {
-  id      String  @id @default(cuid())
-  name    String
-  events  Event[]
-  Group   Group?  @relation(fields: [groupId], references: [id])
-  groupId String?
+  id     String  @id @default(cuid())
+  name   String  @unique
+  events Event[]
 }
 
 model EventCategory {
